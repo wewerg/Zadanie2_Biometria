@@ -1,0 +1,12 @@
+Bayes - vypocitanie pravdepodobnosti javu na zaklade danej hypotezy
+P(Hi|X)=P(X|Mi)* P(Hi)/P(X)
+
+bayesa treba doprogramvat, svm 
+
+cdf
+
+bsvm2
+
+mean - stredna hodnota
+
+posledny stlpec glass.dat zatriedenie do skupin posledny stlpec
