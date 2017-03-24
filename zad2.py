@@ -45,8 +45,6 @@ def summarize(dataset):
     return summaries
 
 
-def bayes(X_train, X_test, y_train, y_test):
-    print()
 
 
 def calculateProbability(x, mean, stdev):

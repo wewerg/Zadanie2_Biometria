@@ -3,8 +3,21 @@ import csv
 import random
 import math
 import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.model_selection import train_test_split
 from sklearn import svm
 
+"""http://machinelearningmastery.com/naive-bayes-classifier-scratch-python/"""
+
+def load_file(filename):
+    """Nacitanie suboru"""
+    with open(filename, 'r') as f:
+        content = f.readlines()
+    content = [x.strip() for x in content]
+    arrays = [x.split() for x in content]
+    data = [x[:18] for x in arrays]
+    type = [x[18] for x in arrays]
+    return data, type
 
 def loadCsv(filename):
     """Nacitava data"""
@@ -116,19 +129,72 @@ def getSvmValues(trainingSet, testSet):
     clf = svm.SVC()
     clf.fit()
 
+def change_values_to_int(input):
+    pole = [int(i) for i in input]
+    return pole
 
-def svm():
-    splitRatio = 0.2
-    filename = 'vehicle.dat'
-    dataset = loadCsv(filename)
-    trainingSet, testSet = splitDataset(dataset, splitRatio)
+
+def change_matrix_to_int(matrix):
+    matrix = [change_values_to_int(i) for i in matrix]
+    return matrix
+
+
+def getSvmValue(data, type, splitRatio):
+    number_of_test = 1 - splitRatio
+    X_train, X_test, y_train, y_test = train_test_split(data, type, test_size=number_of_test, random_state=1)
+    y_train = change_values_to_int(y_train)
+    X = np.array(X_train)
+    y = y_train
+
+    """natrenovanie SVM"""
+    clf = svm.SVC(kernel="linear", C=2.0)
+    clf.fit(X, y)
+    hodnotySVM = getValuesSVM(clf, X_test)
+
+    all = 0
+    good = 0
+    for i in range(len(y_test)):
+        all += 1
+        if int(y_test[i]) is int(hodnotySVM[i]):
+            good += 1
+
+    presnost = good / all
+
+    print("presnost SVM je ", presnost)
+    return presnost
+
+def getValuesSVM(clf: object, testSet: object) -> object:
+    """Získanie pravdepodobnosti pre svm"""
+    predictions = []
+    for i in range(len(testSet)):
+        result = clf.predict(testSet[i])
+        #print(result[0])
+        predictions.append(result)
+    return predictions
+
+def svm_function():
+    filename = "vehicle.dat"
+    data, type = load_file(filename)
+
+
+    data = change_matrix_to_int(data)
+
+    # rozdelenie na trenovacie a testovacie data
+    hodnotySVM = []
+    splitRatios = []
+    for i in range(40, 80):
+        hodnotySVM.append(getSvmValue(data, type, i))
+        splitRatios.append(i)
+    return splitRatios, hodnotySVM
+
+def transformSVM(hodnotySVM):
+    return [x*100 for x in hodnotySVM]
+
 
 
 def main():
     filename = 'vehicle.dat'
     dataset = loadCsv(filename)
-
-    splitRatio = 0.20
 
     resultsBayes =[]
     splitRatios =[]
@@ -147,12 +213,13 @@ def main():
         resultsBayes.append(accuracy)
         print('Accuracy: {0}%'.format(accuracy))
 
-
-    plt.plot(splitRatios, resultsBayes, "r")
+    splitRatiosSVM, hodnotySVM = svm_function()
+    hodnotySVM = transformSVM(hodnotySVM)
+    plt.plot(splitRatios, resultsBayes, "b", splitRatios, hodnotySVM, "r")
     plt.ylabel("percentualna uspesnost")
     plt.xlabel("pomer testovacich-trenovacich dat")
     plt.show()
 
 if __name__ == "__main__":
     main()
-    svm()
+
