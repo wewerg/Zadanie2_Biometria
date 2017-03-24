@@ -172,7 +172,7 @@ def getValuesSVM(clf: object, testSet: object) -> object:
         predictions.append(result)
     return predictions
 
-def svm_function():
+def svm_function(filename):
     filename = "vehicle.dat"
     data, type = load_file(filename)
 
@@ -185,22 +185,23 @@ def svm_function():
     for i in range(40, 80):
         hodnotySVM.append(getSvmValue(data, type, i))
         splitRatios.append(i)
+
+    hodnotySVM = transformSVM(hodnotySVM)
+
     return splitRatios, hodnotySVM
 
 def transformSVM(hodnotySVM):
+    """Zmena hodnot na percenta"""
     return [x*100 for x in hodnotySVM]
 
-
-
-def main():
-    filename = 'vehicle.dat'
+def bayes_function(filename):
     dataset = loadCsv(filename)
 
-    resultsBayes =[]
-    splitRatios =[]
+    resultsBayes = []
+    splitRatios = []
 
     for i in range(40, 80):
-        splitRatio = i/100
+        splitRatio = i / 100
         splitRatios.append(splitRatio)
         print(splitRatio)
         trainingSet, testSet = splitDataset(dataset, splitRatio)
@@ -213,9 +214,21 @@ def main():
         resultsBayes.append(accuracy)
         print('Accuracy: {0}%'.format(accuracy))
 
-    splitRatiosSVM, hodnotySVM = svm_function()
-    hodnotySVM = transformSVM(hodnotySVM)
-    plt.plot(splitRatios, resultsBayes, "b", splitRatios, hodnotySVM, "r")
+    return splitRatios, resultsBayes
+
+def main():
+    filename = 'vehicle.dat'
+
+    splitRatios, resultsBayes = bayes_function(filename)
+
+    splitRatiosSVM, hodnotySVM = svm_function(filename)
+
+
+    line_up, = plt.plot(splitRatios, resultsBayes, "b", label='Bayes')
+    line_down, = plt.plot(splitRatios, hodnotySVM, "r", label='svm')
+    plt.legend(handles=[line_up, line_down])
+
+
     plt.ylabel("percentualna uspesnost")
     plt.xlabel("pomer testovacich-trenovacich dat")
     plt.show()
